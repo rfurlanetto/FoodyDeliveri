@@ -1,30 +1,59 @@
 {
   "info": {
-    "name": "Mini Rastreador de Pedidos API",
+    "name": "FoodyDelivery - Rastreador de Pedidos API",
+    "description": "Coleção atualizada da API do FoodyDelivery com autenticação JWT, catálogo de 50 produtos com controle de estoque, criação de pedidos com endereçamento ViaCEP e rastreamento de status.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080/api" },
-    { "key": "token", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": "1"
+    },
+    {
+      "key": "productId",
+      "value": "1"
+    }
   ],
   "item": [
     {
-      "name": "Auth",
+      "name": "01 - Auth",
       "item": [
         {
           "name": "01 - Cadastro de Usuário",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Cliente Teste\",\n  \"email\": \"cliente@teste.com\",\n  \"password\": \"123456\"\n}"
+              "raw": "{\n  \"name\": \"Renê Furlanetto\",\n  \"email\": \"cliente@foodydelivery.com\",\n  \"password\": \"123456\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
           }
         },
         {
-          "name": "02 - Login",
+          "name": "02 - Login (Armazena Token Automaticamente)",
           "event": [
             {
               "listen": "test",
@@ -33,6 +62,7 @@
                   "var jsonData = pm.response.json();",
                   "if (jsonData.token) {",
                   "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    console.log(\"Token JWT salvo com sucesso!\");",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -41,67 +71,256 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"cliente@teste.com\",\n  \"password\": \"123456\"\n}"
+              "raw": "{\n  \"email\": \"cliente@foodydelivery.com\",\n  \"password\": \"123456\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02b - Consultar Dados da Sessão Atual (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Retorna os dados da sessão do usuário autenticado (id, name, email) para disponibilização automática em pedidos."
           }
         }
       ]
     },
     {
-      "name": "Pedidos",
+      "name": "02 - Produtos & Estoque",
       "item": [
         {
-          "name": "03 - Criar Pedido",
+          "name": "03 - Listar Todos os Produtos (50 Itens com Estoque)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ]
+            },
+            "description": "Retorna o cardápio completo de 50 produtos divididos por categorias (Hambúrgueres, Pizzas, Acompanhamentos, Bebidas e Sobremesas), com preços e quantidade em estoque em tempo real."
+          }
+        },
+        {
+          "name": "04 - Buscar Produto por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "Retorna os detalhes de um produto específico, incluindo preço, estoque atual e se está disponível."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Pedidos",
+      "item": [
+        {
+          "name": "05 - Criar Pedido (Produtos do Catálogo + Endereço ViaCEP)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"orderId\", jsonData.id.toString());",
+                  "    console.log(\"ID do pedido criado salvo em orderId: \" + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customerName\": \"Cliente Teste\",\n  \"deliveryAddress\": \"Av. Paulista, 1000 - Bela Vista\",\n  \"items\": [\n    {\n      \"productName\": \"Hambúrguer Artesanal\",\n      \"quantity\": 2,\n      \"price\": 35.50\n    },\n    {\n      \"productName\": \"Batata Frita\",\n      \"quantity\": 1,\n      \"price\": 18.00\n    }\n  ]\n}"
+              "raw": "{\n  \"customerName\": \"Renê Furlanetto dos Santos\",\n  \"deliveryAddress\": \"Rua Tomé Álvares de Castro, 98 - Apto 23G - Bairro Vila Carmosina, São Paulo - SP, CEP: 08290-270\",\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"productName\": \"Hambúrguer Clássico Artesanal\",\n      \"quantity\": 2,\n      \"price\": 28.90\n    },\n    {\n      \"productId\": 23,\n      \"productName\": \"Batata Frita Tradicional Palito\",\n      \"quantity\": 1,\n      \"price\": 16.90\n    },\n    {\n      \"productId\": 33,\n      \"productName\": \"Coca-Cola Original Lata 350ml\",\n      \"quantity\": 2,\n      \"price\": 6.50\n    }\n  ]\n}"
             },
-            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Cria um novo pedido com os produtos selecionados do catálogo e o endereço estruturado via ViaCEP. O backend deduz automaticamente o estoque dos itens."
           }
         },
         {
-          "name": "04 - Listar Pedidos do Usuário",
+          "name": "06 - Criar Pedido (Teste Validação Estoque Insuficiente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Cliente Teste\",\n  \"deliveryAddress\": \"Praça da Sé, 100 - Sé, São Paulo - SP, CEP: 01001-000\",\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"productName\": \"Hambúrguer Clássico Artesanal\",\n      \"quantity\": 999,\n      \"price\": 28.90\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Demonstra a validação de estoque do backend: tenta solicitar 999 unidades e retorna HTTP 400 Bad Request com mensagem indicando a quantidade disponível."
+          }
+        },
+        {
+          "name": "07 - Listar Pedidos do Usuário",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
-            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Lista todos os pedidos pertencentes ao usuário autenticado com status atualizado e itens."
           }
         },
         {
-          "name": "05 - Buscar Pedido por ID",
+          "name": "08 - Buscar Pedido por ID",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
-            "url": { "raw": "{{baseUrl}}/orders/1", "host": ["{{baseUrl}}"], "path": ["orders", "1"] }
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "description": "Busca detalhes de um pedido específico (itens, valor total, status e endereço formatado)."
           }
         },
         {
-          "name": "06 - Atualizar Status Manualmente",
+          "name": "09 - Atualizar Status do Pedido Manualmente",
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"SAIU_PARA_ENTREGA\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/orders/1/status", "host": ["{{baseUrl}}"], "path": ["orders", "1", "status"] }
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}",
+                "status"
+              ]
+            },
+            "description": "Atualiza manualmente o status do pedido (Opções: RECEBIDO, EM_PREPARO, SAIU_PARA_ENTREGA, ENTREGUE, CANCELADO)."
           }
         }
       ]
