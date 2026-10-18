@@ -24,7 +24,7 @@ public class OrderStatusScheduler {
         this.orderRepository = orderRepository;
     }
 
-    @Scheduled(fixedDelay = 20000)
+    @Scheduled(fixedDelayString = "${app.scheduler.status-interval-ms:20000}")
     @Transactional
     public void advanceOrderStatusesRandomly() {
         List<OrderStatus> activeStatuses = List.of(

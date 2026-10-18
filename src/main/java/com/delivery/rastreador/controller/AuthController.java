@@ -55,8 +55,21 @@ public class AuthController {
             new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
         
         Authentication auth = authenticationManager.authenticate(authToken);
-        String token = tokenService.generateToken(dto.email());
+        User user = (User) auth.getPrincipal();
+        String token = tokenService.generateToken(user.getEmail());
         
-        return ResponseEntity.ok(new AuthResponseDTO(token));
+        return ResponseEntity.ok(new AuthResponseDTO(token, user.getId(), user.getName(), user.getEmail()));
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof User user)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(java.util.Map.of(
+            "id", user.getId(),
+            "name", user.getName(),
+            "email", user.getEmail()
+        ));
     }
 }
