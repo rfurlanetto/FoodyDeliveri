@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: delivery-tracker-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - db-data:/app/data
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/rastreador.db
+    networks:
+      - delivery-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: delivery-tracker-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - delivery-network
+
+volumes:
+  db-data:
+
+networks:
+  delivery-network:
+    driver: bridge
