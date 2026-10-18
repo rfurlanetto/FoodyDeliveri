@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
@@ -27,7 +27,21 @@ function Register() {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Cadastro</h1>
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className="error-message">
+            <span className="error-icon">⚠️</span>
+            <span className="error-text">{error}</span>
+            <button
+              type="button"
+              className="btn-close-error"
+              onClick={() => setError('')}
+              title="Fechar mensagem de erro"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Nome:</label>
@@ -60,7 +74,7 @@ function Register() {
           <button type="submit" className="btn-primary">Cadastrar</button>
         </form>
         <p className="auth-link">
-          Já tem conta? <a href="/login">Faça login</a>
+          Já tem conta? <Link to="/login">Faça login</Link>
         </p>
       </div>
     </div>

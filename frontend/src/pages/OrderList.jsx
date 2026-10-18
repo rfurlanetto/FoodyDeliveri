@@ -34,15 +34,15 @@ function OrderList() {
     <div className="order-list-container">
       <div className="order-list-header">
         <h1>Meus Pedidos</h1>
-        <button className="btn-primary" onClick={() => navigate('/orders/new')}>
-          Novo Pedido
+        <button className="btn-new-order" onClick={() => navigate('/orders/new')}>
+          + Novo Pedido
         </button>
       </div>
       {orders.length === 0 ? (
         <div className="empty-state">
           <p>Nenhum pedido encontrado.</p>
-          <button className="btn-primary" onClick={() => navigate('/orders/new')}>
-            Criar Primeiro Pedido
+          <button className="btn-new-order" onClick={() => navigate('/orders/new')}>
+            + Criar Primeiro Pedido
           </button>
         </div>
       ) : (
