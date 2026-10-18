@@ -1,0 +1,32 @@
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-recebido {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-em_preparo {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.status-saiu_para_entrega {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.status-entregue {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.status-cancelado {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
